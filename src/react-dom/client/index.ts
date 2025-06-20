@@ -3,6 +3,9 @@ import { ReactElement, __setCurrentComponent } from '../../react';
 interface ComponentInstance {
   hooks: Array<{ state: any; queue: Array<any>; setState?: any }>;
   forceUpdate: () => void;
+  component?: Function;
+  props?: any;
+  container?: Element;
 }
 
 export interface Root {
@@ -17,7 +20,8 @@ export interface CreateRootOptions {
   identifierPrefix?: string;
 }
 
-const componentInstances = new WeakMap<Function, ComponentInstance>();
+const componentInstances = new Map<string, ComponentInstance>();
+let componentIdCounter = 0;
 
 function renderElement(element: any, container: Element): void {
   if (element === null || element === undefined || typeof element === 'boolean') {
@@ -67,24 +71,39 @@ function renderElement(element: any, container: Element): void {
       
       container.appendChild(domElement);
     } else if (typeof type === 'function') {
-      let componentInstance = componentInstances.get(type);
+      // Create a unique identifier for this component instance location
+      const componentId = `${type.name || 'Anonymous'}_${componentIdCounter++}`;
       
-      if (!componentInstance) {
-        componentInstance = {
-          hooks: [],
-          forceUpdate: () => {
-            // Don't do anything in forceUpdate for now - this will prevent the disappearing issue
-            // In a real React implementation, this would trigger a re-render of just this component
-            console.log('Component re-render triggered but not implemented yet');
-          }
-        };
-        componentInstances.set(type, componentInstance);
-      }
+      // Create a dedicated container for this component
+      const componentContainer = document.createElement('div');
+      componentContainer.setAttribute('data-component-id', componentId);
+      componentContainer.style.display = 'contents'; // Make wrapper invisible in layout
       
+      const componentInstance: ComponentInstance = {
+        hooks: [],
+        component: type,
+        props: props,
+        container: componentContainer,
+        forceUpdate: () => {
+          // Re-render only this component in its dedicated container
+          componentContainer.innerHTML = '';
+          __setCurrentComponent(componentInstance);
+          const componentResult = type(componentInstance.props);
+          __setCurrentComponent(null);
+          renderElement(componentResult, componentContainer);
+        }
+      };
+      
+      componentInstances.set(componentId, componentInstance);
+      
+      // Initial render
       __setCurrentComponent(componentInstance);
       const componentResult = type(props);
       __setCurrentComponent(null);
-      renderElement(componentResult, container);
+      renderElement(componentResult, componentContainer);
+      
+      // Add the component container to the parent
+      container.appendChild(componentContainer);
     }
   }
 }

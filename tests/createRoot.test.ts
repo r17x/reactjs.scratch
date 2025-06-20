@@ -86,7 +86,12 @@ describe('createRoot', () => {
     const element = createElement(MyComponent, { name: 'World' });
     root.render(element);
     
-    expect(container.innerHTML).toBe('<div>Hello World</div>');
+    // Check that the component content is rendered correctly
+    expect(container.textContent).toBe('Hello World');
+    // Check that the wrapper exists with the correct attributes
+    const wrapper = container.querySelector('[data-component-id]');
+    expect(wrapper).toBeTruthy();
+    expect(wrapper?.style.display).toBe('contents');
   });
 
   it('should clear container on render', () => {

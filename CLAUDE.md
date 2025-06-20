@@ -16,6 +16,19 @@ For the initial features, let's start with these key features:
 
 The API specifications should be fetched from the initial documentation. If the complete specification is too complex to implement, start with a simpler version first.
 
+### TODOs
+
+- Proper implementation of Synthetic Events
+  - This is important to retain the focus on input elements while updating the state.
+- Implement `useEffect` and `useRef`
+- Implement `useContext` and `useReducer`
+- Implement `useMemo` and `useCallback`
+- Implement `useLayoutEffect`
+- Implement `useImperativeHandle`
+- Implement `useDebugValue`
+- Implement `useTransition` and `useDeferredValue`
+- Implement `useId`
+
 ## Your role
 
 Your role is to write code. You do NOT have access to the running app, so you cannot test the code. You MUST rely on me, the user, to test the code.
