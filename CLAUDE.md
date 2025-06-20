@@ -12,6 +12,7 @@ For the initial features, let's start with these key features:
 
 - [`createElement`](https://react.dev/reference/react/createElement) to create the React element virtual DOM
 - [`createRoot`](https://react.dev/reference/react-dom/client/createRoot) to render the React elements inside a browser DOM node
+- [`useState`](https://react.dev/reference/react/useState) to manage state in functional components
 
 The API specifications should be fetched from the initial documentation. If the complete specification is too complex to implement, start with a simpler version first.
 
