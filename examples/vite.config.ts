@@ -6,5 +6,9 @@ export default defineConfig({
     alias: {
       'reactjs-scratch': path.resolve(__dirname, '../src')
     }
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'reactjs-scratch'
   }
 });
