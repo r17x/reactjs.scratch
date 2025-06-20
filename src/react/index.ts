@@ -5,6 +5,22 @@ export interface ReactElement {
   ref: any;
 }
 
+type SetStateAction<T> = T | ((prevState: T) => T);
+type StateUpdater<T> = (action: SetStateAction<T>) => void;
+
+interface HookState {
+  state: any;
+  queue: Array<SetStateAction<any>>;
+}
+
+let currentComponent: ComponentInstance | null = null;
+let currentHookIndex = 0;
+
+interface ComponentInstance {
+  hooks: HookState[];
+  forceUpdate: () => void;
+}
+
 export function createElement(
   type: string | Function,
   props?: Record<string, any> | null,
@@ -27,4 +43,46 @@ export function createElement(
   };
 
   return element;
+}
+
+export function useState<T>(initialState: T | (() => T)): [T, StateUpdater<T>] {
+  if (!currentComponent) {
+    throw new Error('useState can only be called within a component');
+  }
+
+  const hookIndex = currentHookIndex++;
+  const component = currentComponent;
+
+  if (!component.hooks[hookIndex]) {
+    const state = typeof initialState === 'function' 
+      ? (initialState as () => T)() 
+      : initialState;
+    
+    component.hooks[hookIndex] = {
+      state,
+      queue: []
+    };
+  }
+
+  const hook = component.hooks[hookIndex];
+
+  const setState: StateUpdater<T> = (action) => {
+    const nextState = typeof action === 'function' 
+      ? (action as (prevState: T) => T)(hook.state)
+      : action;
+
+    if (Object.is(nextState, hook.state)) {
+      return;
+    }
+
+    hook.state = nextState;
+    component.forceUpdate();
+  };
+
+  return [hook.state, setState];
+}
+
+export function __setCurrentComponent(component: ComponentInstance | null) {
+  currentComponent = component;
+  currentHookIndex = 0;
 }
