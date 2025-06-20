@@ -1,4 +1,9 @@
-import { ReactElement } from '../../react';
+import { ReactElement, __setCurrentComponent } from '../../react';
+
+interface ComponentInstance {
+  hooks: Array<{ state: any; queue: Array<any> }>;
+  forceUpdate: () => void;
+}
 
 export interface Root {
   render(element: ReactElement | string | number | null | undefined): void;
@@ -11,6 +16,8 @@ export interface CreateRootOptions {
   onRecoverableError?: (error: Error, errorInfo: any) => void;
   identifierPrefix?: string;
 }
+
+const componentInstances = new WeakMap<Function, ComponentInstance>();
 
 function renderElement(element: any, container: Element): void {
   if (element === null || element === undefined || typeof element === 'boolean') {
@@ -60,7 +67,25 @@ function renderElement(element: any, container: Element): void {
       
       container.appendChild(domElement);
     } else if (typeof type === 'function') {
+      let componentInstance = componentInstances.get(type);
+      
+      if (!componentInstance) {
+        componentInstance = {
+          hooks: [],
+          forceUpdate: () => {
+            container.innerHTML = '';
+            __setCurrentComponent(componentInstance);
+            const componentResult = type(props);
+            __setCurrentComponent(null);
+            renderElement(componentResult, container);
+          }
+        };
+        componentInstances.set(type, componentInstance);
+      }
+      
+      __setCurrentComponent(componentInstance);
       const componentResult = type(props);
+      __setCurrentComponent(null);
       renderElement(componentResult, container);
     }
   }
