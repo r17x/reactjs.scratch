@@ -1,7 +1,7 @@
 import { ReactElement, __setCurrentComponent } from '../../react';
 
 interface ComponentInstance {
-  hooks: Array<{ state: any; queue: Array<any> }>;
+  hooks: Array<{ state: any; queue: Array<any>; setState?: any }>;
   forceUpdate: () => void;
 }
 

@@ -11,6 +11,7 @@ type StateUpdater<T> = (action: SetStateAction<T>) => void;
 interface HookState {
   state: any;
   queue: Array<SetStateAction<any>>;
+  setState?: StateUpdater<any>;
 }
 
 let currentComponent: ComponentInstance | null = null;
@@ -58,28 +59,28 @@ export function useState<T>(initialState: T | (() => T)): [T, StateUpdater<T>] {
       ? (initialState as () => T)() 
       : initialState;
     
+    const setState: StateUpdater<T> = (action) => {
+      const nextState = typeof action === 'function' 
+        ? (action as (prevState: T) => T)(component.hooks[hookIndex].state)
+        : action;
+
+      if (Object.is(nextState, component.hooks[hookIndex].state)) {
+        return;
+      }
+
+      component.hooks[hookIndex].state = nextState;
+      component.forceUpdate();
+    };
+
     component.hooks[hookIndex] = {
       state,
-      queue: []
+      queue: [],
+      setState
     };
   }
 
   const hook = component.hooks[hookIndex];
-
-  const setState: StateUpdater<T> = (action) => {
-    const nextState = typeof action === 'function' 
-      ? (action as (prevState: T) => T)(hook.state)
-      : action;
-
-    if (Object.is(nextState, hook.state)) {
-      return;
-    }
-
-    hook.state = nextState;
-    component.forceUpdate();
-  };
-
-  return [hook.state, setState];
+  return [hook.state, hook.setState as StateUpdater<T>];
 }
 
 export function __setCurrentComponent(component: ComponentInstance | null) {

@@ -34,3 +34,13 @@ If I send you a URL, you MUST immediately fetch its contents and read it careful
 - `src/react-dom/client`: for create `createRoot`
 - `tests`: a directory for testing all the React APIs and features using `vitest`
 - `examples`: a directory for basic web development using `vite` for test usability of this project
+
+## Environment Setup
+
+### Testing
+
+When running tests, you can use the following command:
+
+```bash
+CI=true , npm test
+```
