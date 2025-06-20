@@ -70,16 +70,17 @@ function renderElement(element: any, container: Element): void {
       let componentInstance = componentInstances.get(type);
       
       if (!componentInstance) {
-        componentInstance = {
+        const newComponentInstance: ComponentInstance = {
           hooks: [],
           forceUpdate: () => {
             container.innerHTML = '';
-            __setCurrentComponent(componentInstance);
+            __setCurrentComponent(newComponentInstance);
             const componentResult = type(props);
             __setCurrentComponent(null);
             renderElement(componentResult, container);
           }
         };
+        componentInstance = newComponentInstance;
         componentInstances.set(type, componentInstance);
       }
       
