@@ -123,13 +123,9 @@ function removeEventHandler(container: Element, element: Element, eventType: str
   if (containerEvents) {
     const handlers = containerEvents.get(eventType);
     if (handlers) {
-      // Find and remove the specific handler
-      for (const handlerObj of handlers) {
-        if (handlerObj.element === element && handlerObj.handler === handler) {
-          handlers.delete(handlerObj);
-          break;
-        }
-      }
+      // Remove all handlers for this element to avoid accumulation
+      const handlersToRemove = Array.from(handlers).filter(h => h.element === element);
+      handlersToRemove.forEach(h => handlers.delete(h));
     }
   }
 }
@@ -351,6 +347,9 @@ function renderElement(element: any, container: Element): void {
             Object.assign(domElement.style, props[propName]);
           } else if (propName === 'className') {
             domElement.className = props[propName];
+          } else if (propName === 'value' && domElement instanceof HTMLInputElement) {
+            // Handle controlled input values carefully
+            domElement.value = props[propName] || '';
           } else if (typeof props[propName] !== 'object' && typeof props[propName] !== 'function') {
             domElement.setAttribute(propName, String(props[propName]));
           }

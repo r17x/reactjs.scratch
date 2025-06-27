@@ -17,7 +17,7 @@ const Counter = (props: { initialCount?: number }) => {
       <p>Count: {count}</p>
       <div style={{ marginTop: '10px' }}>
         <button
-          onClick={() => setCount(count - 1)}
+          onClick={() => setCount(prevCount => prevCount - 1)}
           style={{
             padding: '10px 20px',
             fontSize: '16px',
@@ -32,7 +32,7 @@ const Counter = (props: { initialCount?: number }) => {
           Decrement
         </button>
         <button
-          onClick={() => setCount(count + 1)}
+          onClick={() => setCount(prevCount => prevCount + 1)}
           style={{
             padding: '10px 20px',
             fontSize: '16px',
@@ -71,13 +71,13 @@ const TodoApp = () => {
 
   const addTodo = () => {
     if (inputValue.trim()) {
-      setTodos([...todos, inputValue.trim()]);
+      setTodos(prevTodos => [...prevTodos, inputValue.trim()]);
       setInputValue('');
     }
   };
 
   const removeTodo = (index: number) => {
-    setTodos(todos.filter((_, i) => i !== index));
+    setTodos(prevTodos => prevTodos.filter((_, i) => i !== index));
   };
 
   return (

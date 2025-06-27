@@ -76,5 +76,5 @@ You have access to a [Browser MCP](https://browsermcp.io/) that allows you to
 manipulate browsers directly. Use it when you're asked to test the code in a
 browser environment.
 
-The default URL for testing is `http://localhost:5173/`, which is the default
-URL for Vite development server.
+The default URL for testing is `http://localhost:5173/` or
+`https://localhost:5174/`, which is the default URL for Vite development server.
