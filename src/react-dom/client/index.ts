@@ -203,6 +203,25 @@ function updateElement(container: Element, newElement: any, oldElement: any, ind
     return;
   }
   
+  // Handle text content updates specifically
+  if ((typeof newElement === 'string' || typeof newElement === 'number') && 
+      (typeof oldElement === 'string' || typeof oldElement === 'number')) {
+    if (newElement !== oldElement) {
+      const textNode = container.childNodes[index];
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        textNode.textContent = String(newElement);
+      } else {
+        // Fallback: replace the node entirely
+        const childToReplace = container.childNodes[index];
+        if (childToReplace) {
+          container.removeChild(childToReplace);
+        }
+        renderElement(newElement, container);
+      }
+    }
+    return;
+  }
+  
   // If elements have changed types, replace the old element
   if (hasChanged(newElement, oldElement)) {
     const childToReplace = container.childNodes[index];
@@ -260,16 +279,15 @@ function updateElementProps(domElement: Element, newProps: any, oldProps: any): 
         // Children are handled separately
         return;
       } else if (propName.startsWith('on') && typeof newValue === 'function') {
-        // Remove old event listener and add new one
+        // Use event delegation system for consistent event handling
         const eventName = propName.toLowerCase().substring(2);
+        const container = findRootContainer(domElement);
+        
         if (oldValue) {
-          domElement.removeEventListener(eventName, oldValue);
+          removeEventHandler(container, domElement, eventName, oldValue);
         }
         if (newValue) {
-          domElement.addEventListener(eventName, (nativeEvent: Event) => {
-            const syntheticEvent = createSyntheticEvent(nativeEvent);
-            newValue(syntheticEvent);
-          });
+          addEventHandler(container, domElement, eventName, newValue);
         }
       } else if (propName === 'style' && typeof newValue === 'object') {
         Object.assign((domElement as HTMLElement).style, newValue);
@@ -327,10 +345,8 @@ function renderElement(element: any, container: Element): void {
           } else if (propName.startsWith('on') && typeof props[propName] === 'function') {
             const eventName = propName.toLowerCase().substring(2);
             const handler = props[propName];
-            domElement.addEventListener(eventName, (nativeEvent: Event) => {
-              const syntheticEvent = createSyntheticEvent(nativeEvent);
-              handler(syntheticEvent);
-            });
+            const container = findRootContainer(domElement);
+            addEventHandler(container, domElement, eventName, handler);
           } else if (propName === 'style' && typeof props[propName] === 'object') {
             Object.assign(domElement.style, props[propName]);
           } else if (propName === 'className') {
