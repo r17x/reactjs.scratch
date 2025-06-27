@@ -60,11 +60,13 @@ export function useState<T>(initialState: T | (() => T)): [T, StateUpdater<T>] {
       : initialState;
     
     const setState: StateUpdater<T> = (action) => {
+      // Get the current state value at update time, not from closure
+      const currentState = component.hooks[hookIndex].state;
       const nextState = typeof action === 'function' 
-        ? (action as (prevState: T) => T)(component.hooks[hookIndex].state)
+        ? (action as (prevState: T) => T)(currentState)
         : action;
 
-      if (Object.is(nextState, component.hooks[hookIndex].state)) {
+      if (Object.is(nextState, currentState)) {
         return;
       }
 
